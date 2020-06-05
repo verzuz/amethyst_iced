@@ -10,8 +10,8 @@ use iced_native::{Cache, Size, UserInterface};
 
 use crate::backend::IcedRenderer;
 use crate::primitive::IcedPrimitives;
-use crate::sandbox::{Sandbox, SandboxContainer};
 use crate::resources::FontCache;
+use crate::sandbox::{Sandbox, SandboxContainer};
 
 use crate::IcedGlyphBrush;
 
@@ -97,10 +97,7 @@ impl<'a, S: Sandbox> System<'a> for IcedDrawSystem<S> {
                             },
                         ..
                     } => Some(iced_native::Event::Mouse(
-                        iced_native::input::mouse::Event::Input {
-                            state: iced_native::input::ButtonState::Pressed,
-                            button: iced_native::input::mouse::Button::Left,
-                        },
+                        iced_native::mouse::Event::ButtonPressed(iced_native::mouse::Button::Left),
                     )),
                     WinitEvent::WindowEvent {
                         event:
@@ -111,16 +108,13 @@ impl<'a, S: Sandbox> System<'a> for IcedDrawSystem<S> {
                             },
                         ..
                     } => Some(iced_native::Event::Mouse(
-                        iced_native::input::mouse::Event::Input {
-                            state: iced_native::input::ButtonState::Released,
-                            button: iced_native::input::mouse::Button::Left,
-                        },
+                        iced_native::mouse::Event::ButtonReleased(iced_native::mouse::Button::Left),
                     )),
                     WinitEvent::WindowEvent {
                         event: WinitWindowEvent::CursorMoved { position, .. },
                         ..
                     } => Some(iced_native::Event::Mouse(
-                        iced_native::input::mouse::Event::CursorMoved {
+                        iced_native::mouse::Event::CursorMoved {
                             x: position.x as f32 * screen_dimensions.hidpi_factor() as f32,
                             y: position.y as f32 * screen_dimensions.hidpi_factor() as f32,
                         },

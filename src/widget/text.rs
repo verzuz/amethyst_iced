@@ -4,6 +4,8 @@ use iced_native::widget::text::Renderer as TextRenderer;
 use iced_native::{Color, Font, HorizontalAlignment, Rectangle, Size, VerticalAlignment};
 
 impl<'a> TextRenderer for IcedRenderer<'a> {
+    type Font = Font;
+
     const DEFAULT_SIZE: u16 = 16;
 
     fn measure(&self, content: &str, size: u16, font: Font, bounds: Size) -> (f32, f32) {
