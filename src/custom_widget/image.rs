@@ -3,6 +3,7 @@ use std::hash::Hash;
 
 use amethyst::assets::Handle;
 use amethyst::renderer::Texture;
+use iced_graphics::Primitive;
 use iced_native::{layout, Element, Layout, Length, Point, Renderer, Size, Widget};
 
 use crate::{backend::IcedRenderer, primitive::AmethystIcedPrimitive};
@@ -94,7 +95,10 @@ impl<'a, Message> Widget<Message, IcedRenderer<'a>> for Image {
         _cursor_position: Point,
     ) -> <IcedRenderer as Renderer>::Output {
         let bounds = layout.bounds();
-        AmethystIcedPrimitive::Image(bounds, self.handle.clone())
+        Primitive::Image {
+            bounds: bounds,
+            handle: self.handle.clone(),
+        }
     }
 
     fn hash_layout(&self, state: &mut Hasher) {

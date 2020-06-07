@@ -1,11 +1,11 @@
 use amethyst::assets::AssetStorage;
 use amethyst::ecs::{Read, WriteExpect};
 use amethyst::renderer::SpriteSheet;
+use iced_graphics::Primitive;
 use iced_native::renderer::Renderer;
-
-use crate::primitive::AmethystIcedPrimitive;
-use crate::IcedGlyphBrush;
+//use crate::primitive::AmethystIcedPrimitive;
 use crate::resources::FontCache;
+use crate::IcedGlyphBrush;
 
 use std::cell::RefCell;
 
@@ -30,6 +30,6 @@ impl<'a> IcedRenderer<'a> {
 }
 
 impl<'a> Renderer for IcedRenderer<'a> {
-    type Output = AmethystIcedPrimitive;
+    type Output = Primitive;
     type Defaults = ();
 }

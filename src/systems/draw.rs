@@ -6,6 +6,7 @@ use amethyst::window::ScreenDimensions;
 use amethyst::winit::{
     ElementState, Event as WinitEvent, MouseButton, WindowEvent as WinitWindowEvent,
 };
+use iced_graphics::Primitive;
 use iced_native::{Cache, Size, UserInterface};
 
 use crate::backend::IcedRenderer;
@@ -42,7 +43,7 @@ impl<'a, S: Sandbox> System<'a> for IcedDrawSystem<S> {
         WriteExpect<'a, IcedGlyphBrush>,
         Read<'a, FontCache>,
         ReadExpect<'a, ScreenDimensions>,
-        Write<'a, IcedPrimitives>,
+        Write<'a, Primitives>,
     );
 
     fn run(

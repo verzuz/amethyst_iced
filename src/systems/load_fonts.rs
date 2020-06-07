@@ -1,19 +1,19 @@
-use amethyst::ecs::{System, Write, WriteExpect, Read};
 use amethyst::assets::AssetStorage;
+use amethyst::ecs::{Read, System, Write, WriteExpect};
 use amethyst::ui::FontAsset;
 
 use glyph_brush::FontId;
 
-use crate::IcedGlyphBrush; 
 use crate::resources::FontCache;
+use crate::IcedGlyphBrush;
 
 #[derive(Default)]
-pub struct LoadFontToCacheSystem; 
+pub struct LoadFontToCacheSystem;
 
 impl<'a> System<'a> for LoadFontToCacheSystem {
     type SystemData = (
         WriteExpect<'a, IcedGlyphBrush>,
-        Write<'a, FontCache>, 
+        Write<'a, FontCache>,
         Read<'a, AssetStorage<FontAsset>>,
     );
 
@@ -33,11 +33,9 @@ impl<'a> System<'a> for LoadFontToCacheSystem {
             })
             .collect();
 
-        imported
-            .into_iter()
-            .for_each(|(name, id)| {
-                font_cache.load_list.remove(&name);
-                font_cache.map_id.insert(name, id);
-            })
+        imported.into_iter().for_each(|(name, id)| {
+            font_cache.load_list.remove(&name);
+            font_cache.map_id.insert(name, id);
+        })
     }
 }

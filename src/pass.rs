@@ -15,7 +15,8 @@ use glsl_layout::AsStd140;
 
 use crate::pipelines::{ImagePipeline, TextPipeline, TrianglePipeline};
 use crate::systems::TextVertexContainer;
-use crate::{primitive::IcedPrimitives, vertex::TriangleVertex};
+use crate::{vertex::TriangleVertex};
+use iced_graphics::{Primitive, Layer};
 
 #[derive(Default, Debug)]
 pub struct IcedPassDesc;
@@ -76,7 +77,7 @@ impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
         _subpass: hal::pass::Subpass<'_, B>,
         world: &World,
     ) -> PrepareResult {
-        let mut iced_primitives = Write::<'_, IcedPrimitives>::fetch(world);
+        let mut iced_primitives = Write::<'_, Primitive>::fetch(world);
 
         self.image_pipeline.reset(factory, index);
         self.text_pipeline.reset(factory, index, world);
@@ -88,8 +89,25 @@ impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
             self.triangle_pipeline.transform.std140(),
         );
 
-        if let Some(iced_primitives) = iced_primitives.0.take() {
-            iced_primitives.render(self, factory, index, world);
+        {
+            let iced_primitives = *iced_primitives;
+
+            let viewport_size = viewport.physical_size();
+            let scale_factor = viewport.scale_factor() as f32;
+            let projection = viewport.projection();
+    
+            let mut layers = Layer::generate(iced_primitives, viewport);
+//            layers.push(Layer::overlay(overlay_text, viewport));
+    
+            for layer in layers {
+                self.flush(
+                    gl,
+                    scale_factor,
+                    projection,
+                    &layer,
+                    viewport_size.height,
+                );
+            }
         }
 
         self.triangle_pipeline.vertex.write(
@@ -148,4 +166,6 @@ impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
         self.image_pipeline.dispose(factory);
         self.text_pipeline.dispose(factory);
     }
+
+
 }

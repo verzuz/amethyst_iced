@@ -4,7 +4,7 @@ use crate::vertex::{ImageVertex, TriangleVertex};
 use amethyst::ecs::{SystemData, World, WriteExpect};
 use amethyst::renderer::{rendy::factory::Factory, rendy::hal, types::Backend};
 use glsl_layout::vec4;
-use glyph_brush::{rusttype::Scale, HorizontalAlign, Layout, Section, VerticalAlign, FontId};
+use glyph_brush::{rusttype::Scale, FontId, HorizontalAlign, Layout, Section, VerticalAlign};
 use iced_native::{Color, HorizontalAlignment, Rectangle};
 
 use crate::IcedGlyphBrush;
@@ -126,7 +126,7 @@ impl AmethystIcedPrimitive {
                 size,
                 bounds,
                 horizontal_alignment,
-                font_id, 
+                font_id,
             } => {
                 let mut iced_glyph_brush = WriteExpect::<'_, IcedGlyphBrush>::fetch(world);
                 iced_glyph_brush.queue(Section {

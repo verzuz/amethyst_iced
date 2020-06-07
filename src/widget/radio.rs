@@ -1,8 +1,8 @@
+use iced_graphics::{Background, Primitive};
 use iced_native::radio::Renderer;
 use iced_native::Rectangle;
 
 use crate::backend::IcedRenderer;
-use crate::primitive::AmethystIcedPrimitive;
 
 const SIZE: f32 = 28.0;
 
@@ -23,18 +23,23 @@ impl<'a> Renderer for IcedRenderer<'a> {
         println!("drawing radio");
         let background = AmethystIcedPrimitive::Quad(bounds, Some([1., 1., 1., 1.].into()));
         let selected = if is_selected {
-            AmethystIcedPrimitive::Quad(
-                Rectangle {
+            Primitive::Quad {
+                bounds: Rectangle {
                     x: bounds.x + SIZE / 4.,
                     y: bounds.y + SIZE / 4.,
                     width: bounds.width - SIZE / 2.,
                     height: bounds.height - SIZE / 2.,
                 },
-                Some([0., 1., 0., 1.].into()),
-            )
+                background: Background::Color([0., 1., 0., 1.].into().into()),
+                border_radius: 0,
+                border_width: 1,
+                border_color: [0.6, 0.6, 0.6, 0.5].into(),
+            }
         } else {
-            AmethystIcedPrimitive::None
+            Primitive::None
         };
-        AmethystIcedPrimitive::Group(vec![background, selected, label])
+        Primitive::Group {
+            primitives: vec![background, selected, label],
+        }
     }
 }

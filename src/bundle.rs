@@ -1,19 +1,21 @@
 use amethyst::{
+    assets::Processor,
     core::SystemBundle,
     ecs::{DispatcherBuilder, World},
     shrev::EventChannel,
-    Error,
     ui::FontAsset,
-    assets::Processor,
+    Error,
 };
 use glyph_brush::GlyphBrushBuilder;
 
 use crate::{
-    primitive::IcedPrimitives,
+    //    primitive::IcedPrimitives,
     sandbox::Sandbox,
     systems::{IcedDrawSystem, IcedInteropSystem, LoadFontToCacheSystem},
     IcedGlyphBrush,
 };
+
+use iced_graphics::Primitive;
 
 pub struct IcedBundle<S: Sandbox> {
     _sandbox: std::marker::PhantomData<S>,
@@ -43,7 +45,7 @@ impl<'a, 'b, S: Sandbox> SystemBundle<'a, 'b> for IcedBundle<S> {
         // Creates communication channels for the Sandbox
         world.insert(EventChannel::<S::UIMessage>::default());
         world.insert(EventChannel::<S::GameMessage>::default());
-        world.insert(IcedPrimitives::default());
+        world.insert(Primitive::default());
         let square_ttf: &[u8] = include_bytes!("../font/square.ttf");
         world.insert::<IcedGlyphBrush>(GlyphBrushBuilder::using_font_bytes(square_ttf).build());
 
@@ -54,15 +56,11 @@ impl<'a, 'b, S: Sandbox> SystemBundle<'a, 'b> for IcedBundle<S> {
             "iced_draw",
             &["iced_interop"],
         );
-        dispatcher.add(
-            Processor::<FontAsset>::new(),
-            "iced_font_processor",
-            &[],
-        );
+        dispatcher.add(Processor::<FontAsset>::new(), "iced_font_processor", &[]);
         dispatcher.add(
             LoadFontToCacheSystem::default(),
             "iced_load_font_to_cache",
-            &[]
+            &[],
         );
         Ok(())
     }

@@ -1,3 +1,4 @@
+use iced_graphics::Primitive;
 use iced_native::row::Renderer;
 use iced_native::{Element, Layout, Point};
 
@@ -12,12 +13,12 @@ impl<'a> Renderer for IcedRenderer<'a> {
         layout: Layout<'_>,
         cursor_position: Point,
     ) -> Self::Output {
-        AmethystIcedPrimitive::Group(
-            children
+        Primitive::Group {
+            primitives: children
                 .iter()
                 .zip(layout.children())
                 .map(|(child, layout)| child.draw(self, defaults, layout, cursor_position))
                 .collect(),
-        )
+        }
     }
 }

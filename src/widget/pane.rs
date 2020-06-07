@@ -6,6 +6,7 @@ use iced_native::{
 
 use crate::backend::IcedRenderer;
 use crate::primitive::AmethystIcedPrimitive;
+use iced_graphics::{Background, Primitive};
 
 impl<'a> Renderer for IcedRenderer<'a> {
     fn draw<Message>(
@@ -25,8 +26,8 @@ impl<'a> Renderer for IcedRenderer<'a> {
             cursor_position
         };
 
-        AmethystIcedPrimitive::Group(
-            content
+        Primitive::Group {
+            primitives: content
                 .iter()
                 .zip(layout.children())
                 .enumerate()
@@ -34,6 +35,6 @@ impl<'a> Renderer for IcedRenderer<'a> {
                     pane.draw(self, defaults, layout, pane_cursor_position)
                 })
                 .collect(),
-        )
+        }
     }
 }

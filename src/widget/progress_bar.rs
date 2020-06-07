@@ -1,8 +1,8 @@
-use iced_native::progress_bar::Renderer as Renderer;
+use iced_native::progress_bar::Renderer;
 use iced_native::Rectangle;
 
 use crate::backend::IcedRenderer;
-use crate::primitive::AmethystIcedPrimitive;
+use iced_graphics::{Background, Primitive};
 
 impl<'a> Renderer for IcedRenderer<'a> {
     type Style = ();
@@ -17,26 +17,32 @@ impl<'a> Renderer for IcedRenderer<'a> {
         _style_sheet: &Self::Style,
     ) -> Self::Output {
         let (range_start, range_end) = range.into_inner();
-        let active_progress_width = bounds.width
-            * ((value - range_start) / (range_end - range_start).max(1.0));
+        let active_progress_width =
+            bounds.width * ((value - range_start) / (range_end - range_start).max(1.0));
 
-        let background = AmethystIcedPrimitive::Quad(
-            bounds,
-            Some([1.,1.,1.,1.].into()),
-        );
+        let background = Primitive::Quad {
+            bounds: bounds,
+            background: Background::Color([1.0, 1.0, 1.0, 1.0].into()),
+            border_radius: 0,
+            border_width: 1,
+            border_color: [0.6, 0.6, 0.6, 0.5].into(),
+        };
 
         if active_progress_width > 0.0 {
-            let bar = AmethystIcedPrimitive::Quad(
-                Rectangle {
+            let bar = Primitive::Quad {
+                bounds: Rectangle {
                     width: active_progress_width,
                     ..bounds
                 },
-                Some([0.,1.,0.,1.].into())
-            );
+                background: Background::Color([1.0, 1.0, 0.0, 0.0].into()),
+                border_radius: 0,
+                border_width: 1,
+                border_color: [0.6, 0.6, 0.6, 0.5].into(),
+            };
 
-            AmethystIcedPrimitive::Group(
-                vec![background, bar],
-            )
+            Primitive::Group {
+                primitives: vec![background, bar],
+            }
         } else {
             background
         }

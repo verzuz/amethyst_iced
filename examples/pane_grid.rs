@@ -10,7 +10,8 @@ use amethyst::{
     Error,
 };
 use amethyst_iced::{
-    Align, Button, ButtonState, Column, Container, Element, IcedBundle, IcedUI, Length, Sandbox, SandboxContainer, Text, pane_grid, PaneGrid, HorizontalAlignment, VerticalAlignment,
+    pane_grid, Align, Button, ButtonState, Column, Container, Element, HorizontalAlignment,
+    IcedBundle, IcedUI, Length, PaneGrid, Sandbox, SandboxContainer, Text, VerticalAlignment,
 };
 
 fn main() -> Result<(), Error> {
@@ -24,7 +25,7 @@ fn main() -> Result<(), Error> {
             RenderingBundle::<Backend>::new()
                 .with_plugin(
                     RenderToWindow::from_config_path(display_config)?
-                    .with_clear([0.1,0.1,0.1,1.0])
+                        .with_clear([0.1, 0.1, 0.1, 1.0]),
                 )
                 .with_plugin(IcedUI::default()),
         )?
@@ -81,15 +82,14 @@ impl Sandbox for PaneGridUIState {
     fn view(&mut self) -> Element<Self::UIMessage> {
         let total_panes = self.panes.len();
 
-        let pane_grid =
-            PaneGrid::new(&mut self.panes, |pane, content, focus| {
-                content.view(pane, focus, total_panes)
-            })
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .spacing(10)
-            .on_drag(PaneGridUIMessage::Dragged)
-            .on_resize(PaneGridUIMessage::Resized);
+        let pane_grid = PaneGrid::new(&mut self.panes, |pane, content, focus| {
+            content.view(pane, focus, total_panes)
+        })
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .spacing(10)
+        .on_drag(PaneGridUIMessage::Dragged)
+        .on_resize(PaneGridUIMessage::Resized);
 
         Container::new(pane_grid)
             .width(Length::Fill)
@@ -99,32 +99,26 @@ impl Sandbox for PaneGridUIState {
     }
 
     fn update(&mut self, message: &Self::UIMessage) -> Vec<Self::GameMessage> {
-         match message {
+        match message {
             PaneGridUIMessage::Split(axis, pane) => {
-                let _ = self.panes.split(
-                    *axis,
-                    &pane,
-                    Content::new(self.panes_created),
-                );
+                let _ = self
+                    .panes
+                    .split(*axis, &pane, Content::new(self.panes_created));
 
                 self.panes_created += 1;
             }
             PaneGridUIMessage::SplitFocused(axis) => {
                 if let Some(pane) = self.panes.active() {
-                    let _ = self.panes.split(
-                        *axis,
-                        &pane,
-                        Content::new(self.panes_created),
-                    );
+                    let _ = self
+                        .panes
+                        .split(*axis, &pane, Content::new(self.panes_created));
 
                     self.panes_created += 1;
                 }
             }
             PaneGridUIMessage::FocusAdjacent(direction) => {
                 if let Some(pane) = self.panes.active() {
-                    if let Some(adjacent) =
-                        self.panes.adjacent(&pane, *direction)
-                    {
+                    if let Some(adjacent) = self.panes.adjacent(&pane, *direction) {
                         self.panes.focus(&adjacent);
                     }
                 }
@@ -132,10 +126,7 @@ impl Sandbox for PaneGridUIState {
             PaneGridUIMessage::Resized(pane_grid::ResizeEvent { split, ratio }) => {
                 self.panes.resize(&split, *ratio);
             }
-            PaneGridUIMessage::Dragged(pane_grid::DragEvent::Dropped {
-                pane,
-                target,
-            }) => {
+            PaneGridUIMessage::Dragged(pane_grid::DragEvent::Dropped { pane, target }) => {
                 self.panes.swap(&pane, &target);
             }
             PaneGridUIMessage::Dragged(_) => {}
@@ -148,10 +139,9 @@ impl Sandbox for PaneGridUIState {
                 }
             }
         }
-        Vec::new() 
+        Vec::new()
     }
 }
-
 
 #[derive(Debug)]
 struct Content {
@@ -187,33 +177,24 @@ impl Content {
             .spacing(5)
             .max_width(150)
             .push(
-                Button::new(
-                    split_horizontally,
-                    Text::new("Split horizontally"),
-                )
-                .width(Length::Fill)
-                .padding(8)
-                .on_press(PaneGridUIMessage::Split(pane_grid::Axis::Horizontal, pane))
-            )
-            .push(
-                Button::new(
-                    split_vertically,
-                    Text::new("Split vertically"),
-                )
-                .width(Length::Fill)
-                .padding(8)
-                .on_press(PaneGridUIMessage::Split(pane_grid::Axis::Vertical, pane))
-            );
-            
-            if total_panes > 1 {
-                controls = controls.push(
-                    Button::new(
-                        close, 
-                        Text::new("Close"),
-                    )
+                Button::new(split_horizontally, Text::new("Split horizontally"))
                     .width(Length::Fill)
                     .padding(8)
-                    .on_press(PaneGridUIMessage::Close(pane))
+                    .on_press(PaneGridUIMessage::Split(pane_grid::Axis::Horizontal, pane)),
+            )
+            .push(
+                Button::new(split_vertically, Text::new("Split vertically"))
+                    .width(Length::Fill)
+                    .padding(8)
+                    .on_press(PaneGridUIMessage::Split(pane_grid::Axis::Vertical, pane)),
+            );
+
+        if total_panes > 1 {
+            controls = controls.push(
+                Button::new(close, Text::new("Close"))
+                    .width(Length::Fill)
+                    .padding(8)
+                    .on_press(PaneGridUIMessage::Close(pane)),
             );
         }
 

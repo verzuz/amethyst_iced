@@ -3,7 +3,8 @@ use iced_native::{Element, Layout, Point, Rectangle};
 
 use crate::backend::IcedRenderer;
 use crate::primitive::AmethystIcedPrimitive;
-use crate::{BorderStyle, style::colors};
+use crate::{style::colors, BorderStyle};
+use iced_graphics::{Background, Primitive};
 
 impl<'a> Renderer for IcedRenderer<'a> {
     const DEFAULT_PADDING: u16 = 5;
@@ -26,7 +27,7 @@ impl<'a> Renderer for IcedRenderer<'a> {
         let background = match style {
             ButtonStyle::Builtin {
                 background_color,
-                hovered_color, 
+                hovered_color,
                 pressed_color,
                 disabled_color,
                 ..
@@ -34,58 +35,66 @@ impl<'a> Renderer for IcedRenderer<'a> {
                 let color = if is_disabled {
                     *disabled_color
                 } else if is_pressed {
-                    *pressed_color 
+                    *pressed_color
                 } else if bounds.contains(cursor_position) {
                     *hovered_color
                 } else {
                     *background_color
                 };
-                AmethystIcedPrimitive::Quad(bounds, Some(color.into()))
+                Primitive::Quad {
+                    bounds: bounds,
+                    background: Background::Color(color.into()),
+                    border_radius: 0,
+                    border_width: 1,
+                    border_color: [0.6, 0.6, 0.6, 0.5].into(),
+                }
             }
         };
         let children = content.draw(self, defaults, content_layout, cursor_position);
 
-        AmethystIcedPrimitive::Group(vec![background, children])
+        Primitive::Group {
+            primitives: vec![background, children],
+        }
     }
 }
 
 #[derive(Clone)]
 pub enum ButtonStyle {
     Builtin {
-        background_color: [f32;4],
-        hovered_color: [f32;4],
-        pressed_color: [f32;4],
-        disabled_color: [f32;4],
+        background_color: [f32; 4],
+        hovered_color: [f32; 4],
+        pressed_color: [f32; 4],
+        disabled_color: [f32; 4],
         border_radius: u32,
         border: BorderStyle,
     },
-} 
+}
 
 impl ButtonStyle {
     pub fn danger() -> Self {
         ButtonStyle::Builtin {
-            background_color: colors::DANGER, 
-            hovered_color: colors::DANGER_SHADED, 
-            disabled_color: colors::DANGER_SHADED, 
-            pressed_color: colors::DANGER_DARKER, 
+            background_color: colors::DANGER,
+            hovered_color: colors::DANGER_SHADED,
+            disabled_color: colors::DANGER_SHADED,
+            pressed_color: colors::DANGER_DARKER,
             border_radius: 0,
             border: BorderStyle {
                 width: 1,
-                color: [0.,0.,0.,1.],
+                color: [0., 0., 0., 1.],
             },
         }
     }
-    
+
     pub fn primary() -> Self {
         ButtonStyle::Builtin {
-            background_color: colors::PRIMARY, 
-            hovered_color: colors::PRIMARY_SHADED, 
-            disabled_color: colors::PRIMARY_SHADED, 
-            pressed_color: colors::PRIMARY_DARKER, 
+            background_color: colors::PRIMARY,
+            hovered_color: colors::PRIMARY_SHADED,
+            disabled_color: colors::PRIMARY_SHADED,
+            pressed_color: colors::PRIMARY_DARKER,
             border_radius: 0,
             border: BorderStyle {
                 width: 1,
-                color: [0.,0.,0.,1.],
+                color: [0., 0., 0., 1.],
             },
         }
     }
@@ -94,14 +103,14 @@ impl ButtonStyle {
 impl Default for ButtonStyle {
     fn default() -> Self {
         ButtonStyle::Builtin {
-            background_color: colors::VERY_LIGHT_GRAY, 
-            hovered_color: colors::LIGHT_GRAY, 
-            disabled_color: colors::LIGHT_GRAY, 
-            pressed_color: colors::GRAY, 
+            background_color: colors::VERY_LIGHT_GRAY,
+            hovered_color: colors::LIGHT_GRAY,
+            disabled_color: colors::LIGHT_GRAY,
+            pressed_color: colors::GRAY,
             border_radius: 0,
             border: BorderStyle {
                 width: 1,
-                color: [0.,0.,0.,1.],
+                color: [0., 0., 0., 1.],
             },
         }
     }

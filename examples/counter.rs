@@ -10,8 +10,8 @@ use amethyst::{
     Error,
 };
 use amethyst_iced::{
-    Align, Button, ButtonStyle, ButtonState, Column, Container, Element, IcedBundle, IcedUI, Length, Sandbox,
-    SandboxContainer, Text,
+    Align, Button, ButtonState, ButtonStyle, Column, Container, Element, IcedBundle, IcedUI,
+    Length, Sandbox, SandboxContainer, Text,
 };
 
 fn main() -> Result<(), Error> {
@@ -67,12 +67,9 @@ impl Sandbox for CounterUIState {
             .align_items(Align::Center)
             .push(Text::new(format!("Pressed {} times", self.pressed)))
             .push(
-                Button::new(
-                    &mut self.button_state,
-                    Text::new("Click me !"),
-                )
-                .on_press(CounterUIMessage::Clicked)
-                .style(ButtonStyle::primary()),
+                Button::new(&mut self.button_state, Text::new("Click me !"))
+                    .on_press(CounterUIMessage::Clicked)
+                    .style(ButtonStyle::primary()),
             );
 
         Container::new(col)

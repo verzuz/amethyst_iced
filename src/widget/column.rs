@@ -1,4 +1,5 @@
 use crate::{backend::IcedRenderer, primitive::AmethystIcedPrimitive};
+use iced_graphics::Primitive;
 use iced_native::{column::Renderer as ColumnRenderer, Element, Layout, Point};
 
 impl<'a> ColumnRenderer for IcedRenderer<'a> {
@@ -9,12 +10,12 @@ impl<'a> ColumnRenderer for IcedRenderer<'a> {
         layout: Layout<'_>,
         cursor_position: Point,
     ) -> Self::Output {
-        AmethystIcedPrimitive::Group(
-            content
+        Primitive::Group {
+            primitives: content
                 .iter()
                 .zip(layout.children())
                 .map(|(child, layout)| child.draw(self, defaults, layout, cursor_position))
                 .collect(),
-        )
+        }
     }
 }

@@ -10,8 +10,8 @@ use amethyst::{
     Error,
 };
 use amethyst_iced::{
-    Align, Button, ButtonState, Column, Container, Element, IcedBundle, IcedUI, Length, Sandbox,
-    SandboxContainer, Text, ProgressBar,
+    Align, Button, ButtonState, Column, Container, Element, IcedBundle, IcedUI, Length,
+    ProgressBar, Sandbox, SandboxContainer, Text,
 };
 
 fn main() -> Result<(), Error> {
@@ -69,11 +69,8 @@ impl Sandbox for ProgressBarUIState {
             .push(Text::new(format!("Pressed {}/10 times", self.clicks)))
             .push(ProgressBar::new(0.0..=10., self.clicks as f32).width(Length::Units(400)))
             .push(
-                Button::new(
-                    &mut self.button_state,
-                    Text::new("Click me !"),
-                )
-                .on_press(ProgressBarUIMessage::Clicked),
+                Button::new(&mut self.button_state, Text::new("Click me !"))
+                    .on_press(ProgressBarUIMessage::Clicked),
             );
 
         Container::new(col)
@@ -86,7 +83,7 @@ impl Sandbox for ProgressBarUIState {
 
     fn update(&mut self, message: &Self::UIMessage) -> Vec<Self::GameMessage> {
         match message {
-            ProgressBarUIMessage::Clicked => self.clicks = (self.clicks+1).min(10),
+            ProgressBarUIMessage::Clicked => self.clicks = (self.clicks + 1).min(10),
         }
         vec![]
     }
