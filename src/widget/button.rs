@@ -2,7 +2,6 @@ use iced_native::button::Renderer;
 use iced_native::{Element, Layout, Point, Rectangle};
 
 use crate::backend::IcedRenderer;
-use crate::primitive::AmethystIcedPrimitive;
 use crate::{style::colors, BorderStyle};
 use iced_graphics::{Background, Primitive};
 

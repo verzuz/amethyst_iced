@@ -3,7 +3,6 @@ use iced_native::row::Renderer;
 use iced_native::{Element, Layout, Point};
 
 use crate::backend::IcedRenderer;
-use crate::primitive::AmethystIcedPrimitive;
 
 impl<'a> Renderer for IcedRenderer<'a> {
     fn draw<Message>(

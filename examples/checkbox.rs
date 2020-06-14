@@ -29,7 +29,7 @@ fn main() -> Result<(), Error> {
                 )
                 .with_plugin(IcedUI::default()),
         )?
-        .with_bundle(IcedBundle::<CheckboxUIState>::default())?;
+        .with_bundle(IcedBundle::<CheckboxUIState, Backend>::default())?;
 
     let mut game = Application::new(assets, CheckboxState::default(), game_data)?;
     game.run();

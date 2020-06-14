@@ -10,6 +10,7 @@ failure = "0.1"
 glam = "0.8.6"
 glsl-layout = "0.3"
 iced_native = { git = "https://github.com/hecrj/iced", rev = "4c494c724435d05d1b46d19bf890a8aaef962b15"} 
+iced_graphics = { git = "https://github.com/hecrj/iced", rev = "4c494c724435d05d1b46d19bf890a8aaef962b15"} 
 iced_winit = "0.1.0"
 lazy_static = "1.4.0"
 log = "0.4.8"
@@ -21,3 +22,7 @@ empty = ["amethyst/empty"]
 vulkan = ["amethyst/vulkan"]
 metal = ["amethyst/metal"]
 #dx12 = ["amethyst/dx12"]
+
+[patch."https://github.com/hecrj/iced"]
+iced_native = { path = "D:/projects/rust/iced/native" }
+iced_graphics = { path = "D:/projects/rust/iced/graphics" }

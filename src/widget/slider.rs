@@ -3,7 +3,6 @@ use iced_native::slider::Renderer;
 use iced_native::{Point, Rectangle};
 
 use crate::backend::IcedRenderer;
-use crate::primitive::AmethystIcedPrimitive;
 
 use std::ops::RangeInclusive;
 

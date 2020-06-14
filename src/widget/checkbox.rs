@@ -3,7 +3,6 @@ use iced_native::checkbox::Renderer;
 use iced_native::Rectangle;
 
 use crate::backend::IcedRenderer;
-//use crate::primitive::AmethystIcedPrimitive;
 
 impl<'a> Renderer for IcedRenderer<'a> {
     const DEFAULT_SIZE: u16 = 20;
@@ -21,7 +20,13 @@ impl<'a> Renderer for IcedRenderer<'a> {
     ) -> Self::Output {
         // TODO: Style background color & radio color, outline
         println!("drawing radio");
-        let background = AmethystIcedPrimitive::Quad(bounds, Some([1., 1., 1., 1.].into()));
+        let background = Primitive::Quad {
+            bounds: bounds,
+            background: Background::Color([1., 1., 1., 1.].into()),
+            border_radius: 0,
+            border_width: 1,
+            border_color: [0.6, 0.6, 0.6, 0.5].into(),
+        };
         let selected = if is_checked {
             let default_size = Self::DEFAULT_SIZE as f32;
             Primitive::Quad {

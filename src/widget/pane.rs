@@ -5,8 +5,7 @@ use iced_native::{
 };
 
 use crate::backend::IcedRenderer;
-use crate::primitive::AmethystIcedPrimitive;
-use iced_graphics::{Background, Primitive};
+use iced_graphics::Primitive;
 
 impl<'a> Renderer for IcedRenderer<'a> {
     fn draw<Message>(

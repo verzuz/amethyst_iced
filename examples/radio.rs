@@ -29,7 +29,7 @@ fn main() -> Result<(), Error> {
                 )
                 .with_plugin(IcedUI::default()),
         )?
-        .with_bundle(IcedBundle::<RadioUIState>::default())?;
+        .with_bundle(IcedBundle::<RadioUIState, Backend>::default())?;
 
     let mut game = Application::new(assets, RadioState::default(), game_data)?;
     game.run();

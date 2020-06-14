@@ -6,7 +6,7 @@ use amethyst::renderer::Texture;
 use iced_graphics::Primitive;
 use iced_native::{layout, Element, Layout, Length, Point, Renderer, Size, Widget};
 
-use crate::{backend::IcedRenderer, primitive::AmethystIcedPrimitive};
+use crate::backend::IcedRenderer;
 
 pub struct Image {
     handle: ImageHandle,
@@ -60,6 +60,7 @@ impl Image {
         self
     }
 }
+/*
 
 impl<'a, Message> Widget<Message, IcedRenderer<'a>> for Image {
     fn width(&self) -> Length {
@@ -115,3 +116,5 @@ impl<'a, 'r, Message> From<Image> for Element<'a, Message, IcedRenderer<'r>> {
         Element::new(image)
     }
 }
+
+*/

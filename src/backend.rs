@@ -2,10 +2,10 @@ use amethyst::assets::AssetStorage;
 use amethyst::ecs::{Read, WriteExpect};
 use amethyst::renderer::SpriteSheet;
 use iced_graphics::Primitive;
-use iced_native::renderer::Renderer;
-//use crate::primitive::AmethystIcedPrimitive;
+
 use crate::resources::FontCache;
 use crate::IcedGlyphBrush;
+use iced_native::renderer::Renderer;
 
 use std::cell::RefCell;
 

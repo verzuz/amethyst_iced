@@ -21,7 +21,14 @@ impl<'a> Renderer for IcedRenderer<'a> {
     ) -> Self::Output {
         // TODO: Style background color & radio color, outline
         println!("drawing radio");
-        let background = AmethystIcedPrimitive::Quad(bounds, Some([1., 1., 1., 1.].into()));
+        let background = Primitive::Quad {
+            bounds: bounds,
+            background: Background::Color([1., 1., 1., 1.].into()),
+            border_radius: 0,
+            border_width: 1,
+            border_color: [0.6, 0.6, 0.6, 0.5].into(),
+        };
+
         let selected = if is_selected {
             Primitive::Quad {
                 bounds: Rectangle {
@@ -30,7 +37,7 @@ impl<'a> Renderer for IcedRenderer<'a> {
                     width: bounds.width - SIZE / 2.,
                     height: bounds.height - SIZE / 2.,
                 },
-                background: Background::Color([0., 1., 0., 1.].into().into()),
+                background: Background::Color([0., 1., 0., 1.].into()),
                 border_radius: 0,
                 border_width: 1,
                 border_color: [0.6, 0.6, 0.6, 0.5].into(),

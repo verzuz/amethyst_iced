@@ -4,13 +4,13 @@ mod custom_widget;
 mod pass;
 mod pipelines;
 mod plugin;
-mod primitive;
 mod resources;
 pub mod sandbox;
 pub mod style;
 mod systems;
 mod uniform;
 mod vertex;
+
 pub mod widget;
 
 pub use bundle::IcedBundle;

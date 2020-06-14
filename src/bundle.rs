@@ -2,6 +2,7 @@ use amethyst::{
     assets::Processor,
     core::SystemBundle,
     ecs::{DispatcherBuilder, World},
+    renderer::types::Backend,
     shrev::EventChannel,
     ui::FontAsset,
     Error,
@@ -9,7 +10,6 @@ use amethyst::{
 use glyph_brush::GlyphBrushBuilder;
 
 use crate::{
-    //    primitive::IcedPrimitives,
     sandbox::Sandbox,
     systems::{IcedDrawSystem, IcedInteropSystem, LoadFontToCacheSystem},
     IcedGlyphBrush,
@@ -17,26 +17,28 @@ use crate::{
 
 use iced_graphics::Primitive;
 
-pub struct IcedBundle<S: Sandbox> {
+pub struct IcedBundle<S: Sandbox, B: Backend> {
     _sandbox: std::marker::PhantomData<S>,
+    _backend: std::marker::PhantomData<B>,
 }
 
-impl<S: Sandbox> Default for IcedBundle<S> {
+impl<S: Sandbox, B: Backend> Default for IcedBundle<S, B> {
     fn default() -> Self {
         IcedBundle::new()
     }
 }
 
-impl<S: Sandbox> IcedBundle<S> {
+impl<S: Sandbox, B: Backend> IcedBundle<S, B> {
     /// Creates a new IcedBundle containing a Sandboxed application
     pub fn new() -> Self {
         IcedBundle {
             _sandbox: std::marker::PhantomData,
+            _backend: std::marker::PhantomData,
         }
     }
 }
 
-impl<'a, 'b, S: Sandbox> SystemBundle<'a, 'b> for IcedBundle<S> {
+impl<'a, 'b, S: Sandbox, B: Backend> SystemBundle<'a, 'b> for IcedBundle<S, B> {
     fn build(
         self,
         world: &mut World,
@@ -52,7 +54,7 @@ impl<'a, 'b, S: Sandbox> SystemBundle<'a, 'b> for IcedBundle<S> {
         // Adds Iced-related systems
         dispatcher.add(IcedInteropSystem::<S>::default(), "iced_interop", &[]);
         dispatcher.add(
-            IcedDrawSystem::<S>::default(),
+            IcedDrawSystem::<S, B>::default(),
             "iced_draw",
             &["iced_interop"],
         );

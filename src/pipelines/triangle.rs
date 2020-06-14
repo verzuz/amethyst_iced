@@ -1,3 +1,4 @@
+use crate::vertex::TriangleVertex;
 use amethyst::renderer::{
     pipeline::{PipelineDescBuilder, PipelinesBuilder},
     rendy::{
@@ -14,8 +15,6 @@ use amethyst::renderer::{
 };
 use glam::{Mat4, Vec3};
 use glsl_layout::{mat4, AsStd140};
-
-use crate::vertex::TriangleVertex;
 
 lazy_static::lazy_static! {
      static ref TRIANGLE_VERTEX: SpirvShader = SpirvShader::from_bytes(
@@ -137,16 +136,25 @@ impl<B: Backend> TrianglePipeline<B> {
         }
     }
 
-    pub fn draw(&self, encoder: &mut RenderPassEncoder<'_, B>, index: usize) {
+    pub fn draw(
+        &self,
+        encoder: &mut RenderPassEncoder<'_, B>,
+        index: usize,
+        from: u32,
+        count: u32,
+        bounds: pso::Rect,
+    ) {
         if self.vertices.len() == 0 {
             return;
         }
-
+        unsafe {
+            encoder.set_scissors(0, &[bounds]);
+        }
         encoder.bind_graphics_pipeline(&self.pipeline);
         self.uniforms.bind(index, &self.pipeline_layout, 0, encoder);
         self.vertex.bind(index, 0, 0, encoder);
         unsafe {
-            encoder.draw(0..self.vertices.len() as u32, 0..1);
+            encoder.draw(from..(from + count), 0..1);
         }
     }
 }

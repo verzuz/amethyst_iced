@@ -12,6 +12,11 @@ pub struct TextVertex {
     pub color: vec4,
 }
 
+#[derive(Clone)]
+pub struct TextInfo {
+    pub vertices: Vec<TextVertex>,
+}
+
 impl AsVertex for TextVertex {
     fn vertex() -> VertexFormat {
         VertexFormat::new((

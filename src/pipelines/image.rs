@@ -147,14 +147,26 @@ impl<B: Backend> ImagePipeline<B> {
         self.uniforms.write(factory, index, self.transform.std140());
     }
 
-    pub fn draw(&self, encoder: &mut RenderPassEncoder<'_, B>, index: usize) {
+    pub fn draw(
+        &self,
+        encoder: &mut RenderPassEncoder<'_, B>,
+        index: usize, /*, batch_start : usize, batch_count : usize*/
+    ) {
         if self.batches.count() == 0 {
             return;
         }
-
-        encoder.bind_graphics_pipeline(&self.pipeline);
-        self.uniforms.bind(index, &self.pipeline_layout, 0, encoder);
-        self.vertex.bind(index, 0, 0, encoder);
+        /*
+                encoder.bind_graphics_pipeline(&self.pipeline);
+                self.uniforms.bind(index, &self.pipeline_layout, 0, encoder);
+                self.vertex.bind(index, 0, 0, encoder);
+                for i in batch_start..batch_count {
+                    let (&tex, verts) = self.batches[i];
+                    self.textures.bind(&self.pipeline_layout, 1, tex, encoder);
+                    unsafe {
+                        encoder.draw(verts, 0..1);
+                    }
+                }
+        */
         self.batches.iter().for_each(|(&tex, verts)| {
             self.textures.bind(&self.pipeline_layout, 1, tex, encoder);
             unsafe {

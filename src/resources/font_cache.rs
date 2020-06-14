@@ -5,7 +5,7 @@ use glyph_brush::FontId;
 
 use std::collections::{HashMap, HashSet};
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct FontCache {
     pub(crate) map: HashMap<String, Handle<FontAsset>>,
     pub(crate) load_list: HashSet<String>,

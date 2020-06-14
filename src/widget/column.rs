@@ -1,4 +1,4 @@
-use crate::{backend::IcedRenderer, primitive::AmethystIcedPrimitive};
+use crate::backend::IcedRenderer;
 use iced_graphics::Primitive;
 use iced_native::{column::Renderer as ColumnRenderer, Element, Layout, Point};
 

@@ -1,8 +1,8 @@
-use crate::{backend::IcedRenderer, primitive::AmethystIcedPrimitive};
+use crate::backend::IcedRenderer;
 use glyph_brush::{rusttype::Scale, FontId, GlyphCruncher, Section};
+use iced_graphics::Primitive;
 use iced_native::widget::text::Renderer as TextRenderer;
 use iced_native::{Color, Font, HorizontalAlignment, Rectangle, Size, VerticalAlignment};
-use iced_graphics::Primitive;
 
 impl<'a> TextRenderer for IcedRenderer<'a> {
     type Font = Font;
@@ -54,9 +54,9 @@ impl<'a> TextRenderer for IcedRenderer<'a> {
         Primitive::Text {
             bounds: bounds,
             content: content.to_string(),
-            size:size as f32,
-            color:color.into(),
-            horizontal_alignment:horizontal_alignment,
+            size: size as f32,
+            color: color.into(),
+            horizontal_alignment: horizontal_alignment,
             vertical_alignment: vertical_alignment,
             font: Font::Default,
         }

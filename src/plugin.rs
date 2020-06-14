@@ -11,7 +11,6 @@ use amethyst::{
 use std::fmt::Debug;
 
 use crate::pass::IcedPassDesc;
-use crate::systems::IcedDrawGlyphSystem;
 
 #[derive(Default, Debug)]
 pub struct IcedUI;
@@ -22,7 +21,6 @@ impl<B: Backend> RenderPlugin<B> for IcedUI {
         _world: &mut World,
         builder: &mut DispatcherBuilder<'a, 'b>,
     ) -> Result<(), Error> {
-        builder.add(IcedDrawGlyphSystem::<B>::default(), "iced_draw_glyph", &[]);
         Ok(())
     }
 

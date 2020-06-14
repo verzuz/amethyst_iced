@@ -147,16 +147,18 @@ impl<B: Backend> TextPipeline<B> {
         self.glyph_atlas_id = Some(tex_id);
     }
 
-    pub fn draw(&self, encoder: &mut RenderPassEncoder<'_, B>, index: usize, world: &World) {
+    pub fn draw(
+        &self,
+        encoder: &mut RenderPassEncoder<'_, B>,
+        index: usize,
+        world: &World,
+        start: u32,
+        count: u32,
+    ) {
         if self.glyph_atlas_id.is_none() {
             return;
         }
         let tex_id = self.glyph_atlas_id.unwrap();
-
-        let text_vertex_container = Read::<'_, TextVertexContainer>::fetch(world);
-        if text_vertex_container.0.len() == 0 {
-            return;
-        }
 
         encoder.bind_graphics_pipeline(&self.pipeline);
         self.uniforms.bind(index, &self.pipeline_layout, 0, encoder);
@@ -164,8 +166,7 @@ impl<B: Backend> TextPipeline<B> {
         self.textures
             .bind(&self.pipeline_layout, 1, tex_id, encoder);
         unsafe {
-            encoder.draw(0..text_vertex_container.0.len() as u32, 0..1);
-            //encoder.draw(0..6, 0..1);
+            encoder.draw(0..count, 0..1); //TODO use start & count
         }
     }
 
