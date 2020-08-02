@@ -52,12 +52,12 @@ impl<'a> TextRenderer for IcedRenderer<'a> {
         };
 
         Primitive::Text {
-            bounds: bounds,
+            bounds,
             content: content.to_string(),
             size: size as f32,
             color: color.into(),
-            horizontal_alignment: horizontal_alignment,
-            vertical_alignment: vertical_alignment,
+            horizontal_alignment,
+            vertical_alignment,
             font: Font::Default,
         }
     }

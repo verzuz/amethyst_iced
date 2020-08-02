@@ -2,6 +2,7 @@ mod button;
 mod checkbox;
 mod column;
 mod container;
+mod image;
 mod pane;
 mod progress_bar;
 mod radio;
@@ -23,3 +24,4 @@ pub type Slider<'a, 'r, Message> = iced_native::Slider<'a, Message, IcedRenderer
 pub type Space = iced_native::Space;
 pub type Radio<'a, Message> = iced_native::Radio<Message, IcedRenderer<'a>>;
 pub type Row<'a, 'r, Message> = iced_native::Row<'a, Message, IcedRenderer<'r>>;
+pub type Image = iced_native::Image;

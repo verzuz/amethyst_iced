@@ -155,9 +155,10 @@ impl<B: Backend> TextPipeline<B> {
         start: u32,
         count: u32,
     ) {
-        if self.glyph_atlas_id.is_none() {
+        if self.glyph_atlas_id.is_none() || count == 0 {
             return;
         }
+
         let tex_id = self.glyph_atlas_id.unwrap();
 
         encoder.bind_graphics_pipeline(&self.pipeline);

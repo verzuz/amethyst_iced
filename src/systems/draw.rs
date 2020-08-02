@@ -20,7 +20,7 @@ use iced_graphics::Primitive;
 use iced_native::{Cache, Size, UserInterface};
 
 use crate::backend::IcedRenderer;
-use crate::resources::FontCache;
+use crate::resources::{FontCache, ImageCache};
 use crate::sandbox::{Sandbox, SandboxContainer};
 use crate::vertex::TextInfo;
 use crate::IcedGlyphBrush;
@@ -64,6 +64,7 @@ impl<'a, S: Sandbox, B: Backend> System<'a> for IcedDrawSystem<S, B> {
         WriteExpect<'a, Factory<B>>,
         Option<Read<'a, QueueId>>,
         Write<'a, GlyphAtlas>,
+        Write<'a, ImageCache>,
     );
 
     fn run(
@@ -81,6 +82,7 @@ impl<'a, S: Sandbox, B: Backend> System<'a> for IcedDrawSystem<S, B> {
             mut factory,
             queue,
             mut glyph_atlas,
+            image_cache,
         ): Self::SystemData,
     ) {
         if sandbox.is_none() {
@@ -89,7 +91,8 @@ impl<'a, S: Sandbox, B: Backend> System<'a> for IcedDrawSystem<S, B> {
         }
         let mut sandbox = sandbox.unwrap();
         {
-            let mut renderer = IcedRenderer::new(sprite_sheet, glyph_brush, font_cache);
+            let mut renderer =
+                IcedRenderer::new(sprite_sheet, glyph_brush, font_cache, image_cache);
 
             if queue.is_none() {
                 return;

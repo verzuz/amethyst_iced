@@ -18,12 +18,15 @@ use amethyst::ui::{FontAsset, TtfFormat};
 use glsl_layout::AsStd140;
 
 use crate::pipelines::{ImagePipeline, TextPipeline, TrianglePipeline};
-use crate::resources::FontCache;
-use crate::systems::{GlyphAtlas};
-use crate::vertex::{TextVertex, TriangleVertex};
+use crate::resources::{FontCache, ImageCache};
+use crate::systems::GlyphAtlas;
+use crate::vertex::{ImageVertex, TextVertex, TriangleVertex};
 use crate::IcedGlyphBrush;
-use glyph_brush::{BrushAction, BrushError,rusttype::Scale, FontId, HorizontalAlign, Layout, Section, VerticalAlign};
-use iced_graphics::{Layer, Primitive, Rectangle, Size, Viewport};
+use glyph_brush::{
+    rusttype::Scale, BrushAction, BrushError, FontId, HorizontalAlign, Layout, Section,
+    VerticalAlign,
+};
+use iced_graphics::{Image, Layer, Primitive, Rectangle, Size, Viewport};
 use iced_native::{Font, HorizontalAlignment, VerticalAlignment};
 
 #[derive(Default, Debug)]
@@ -72,7 +75,7 @@ impl<B: Backend> RenderGroupDesc<B, World> for IcedPassDesc {
             prev_hash_layout: vec![0, 0, 0, 0, 0],
             layer_infos: Vec::new(),
             default_font: font_handle,
-            text_vertices : Vec::new(),
+            text_vertices: Vec::new(),
         }))
     }
 }
@@ -85,7 +88,7 @@ pub struct IcedPass<B: Backend> {
     pub prev_hash_layout: Vec<u64>,
     layer_infos: Vec<LayerInfo>,
     default_font: Handle<FontAsset>,
-    text_vertices : Vec<TextVertex>,
+    text_vertices: Vec<TextVertex>,
 }
 
 #[derive(Debug)]
@@ -119,7 +122,13 @@ impl Default for LayerInfo {
 }
 
 impl<B: Backend> IcedPass<B> {
-    fn compute_renderdata(&mut self, layer: Layer, world: &World) -> LayerInfo {
+    fn compute_renderdata(
+        &mut self,
+        layer: Layer,
+        world: &World,
+        factory: &Factory<B>,
+        queue: QueueId,
+    ) -> LayerInfo {
         let mut layerinfo = LayerInfo::default();
         layerinfo.quad_start = self.triangle_pipeline.vertices.len() as u32;
         for quad in &layer.quads {
@@ -155,8 +164,8 @@ impl<B: Backend> IcedPass<B> {
 
         layerinfo.quad_count = layer.quads.len() as u32 * 6;
 
-        let mut font_cache = Write::<'_, FontCache>::fetch(world);
-        let mut iced_glyph_brush = WriteExpect::<'_, IcedGlyphBrush>::fetch(world);
+        let font_cache = Write::<'_, FontCache>::fetch(world);
+        let mut glyph_brush = WriteExpect::<'_, IcedGlyphBrush>::fetch(world);
 
         layerinfo.text_start = 0;
         layerinfo.text_count = layer.text.len() as u32;
@@ -167,7 +176,7 @@ impl<B: Backend> IcedPass<B> {
                 Font::External { name, .. } => font_cache.get_id(name).cloned().unwrap_or_default(),
             };
 
-            iced_glyph_brush.queue(Section {
+            glyph_brush.queue(Section {
                 font_id: font_id,
                 text: &text.content,
                 color: text.color,
@@ -187,6 +196,160 @@ impl<B: Backend> IcedPass<B> {
                     }),
                 ..Section::default()
             });
+        }
+        {
+            let action = {
+                let asset_textures = Write::<'_, AssetStorage<Texture>>::fetch(world);
+                let glyph_atlas = Write::<'_, GlyphAtlas>::fetch(world);
+                let glyph_tex = asset_textures
+                    .get(&glyph_atlas.0.as_ref().unwrap())
+                    .and_then(B::unwrap_texture)
+                    .unwrap();
+                glyph_brush.process_queued(
+                    |rect, data| unsafe {
+                        factory
+                            .upload_image(
+                                glyph_tex.image().clone(),
+                                rect.width(),
+                                rect.height(),
+                                hal::image::SubresourceLayers {
+                                    aspects: hal::format::Aspects::COLOR,
+                                    level: 0,
+                                    layers: 0..1,
+                                },
+                                hal::image::Offset {
+                                    x: rect.min.x as _,
+                                    y: rect.min.y as _,
+                                    z: 0,
+                                },
+                                hal::image::Extent {
+                                    width: rect.width(),
+                                    height: rect.height(),
+                                    depth: 1,
+                                },
+                                data,
+                                ImageState {
+                                    queue,
+                                    stage: hal::pso::PipelineStage::FRAGMENT_SHADER,
+                                    access: hal::image::Access::SHADER_READ,
+                                    layout: hal::image::Layout::General,
+                                },
+                                ImageState {
+                                    queue,
+                                    stage: hal::pso::PipelineStage::FRAGMENT_SHADER,
+                                    access: hal::image::Access::SHADER_READ,
+                                    layout: hal::image::Layout::General,
+                                },
+                            )
+                            .unwrap();
+                    },
+                    |glyph| {
+                        // TODO: dont display glyph if out of screen bounds
+
+                        let uvs = glyph.tex_coords;
+                        //let pos = glyph.pixel_coords;
+                        let pos = glyph.pixel_coords;
+                        let color: [f32; 4] = glyph.color;
+
+                        (
+                            glyph.z.to_bits(),
+                            vec![
+                                TextVertex {
+                                    position: [pos.min.x as f32, pos.min.y as f32].into(),
+                                    uv: [uvs.min.x, uvs.min.y].into(),
+                                    color: color.into(),
+                                },
+                                TextVertex {
+                                    position: [pos.max.x as f32, pos.min.y as f32].into(),
+                                    uv: [uvs.max.x, uvs.min.y].into(),
+                                    color: color.into(),
+                                },
+                                TextVertex {
+                                    position: [pos.max.x as f32, pos.max.y as f32].into(),
+                                    uv: [uvs.max.x, uvs.max.y].into(),
+                                    color: color.into(),
+                                },
+                                TextVertex {
+                                    position: [pos.min.x as f32, pos.min.y as f32].into(),
+                                    uv: [uvs.min.x, uvs.min.y].into(),
+                                    color: color.into(),
+                                },
+                                TextVertex {
+                                    position: [pos.min.x as f32, pos.max.y as f32].into(),
+                                    uv: [uvs.min.x, uvs.max.y].into(),
+                                    color: color.into(),
+                                },
+                                TextVertex {
+                                    position: [pos.max.x as f32, pos.max.y as f32].into(),
+                                    uv: [uvs.max.x, uvs.max.y].into(),
+                                    color: color.into(),
+                                },
+                            ],
+                        )
+                    },
+                )
+            };
+            match action {
+                Ok(BrushAction::Draw(vertices)) => {
+                    let vertices: Vec<TextVertex> = vertices
+                        .into_iter()
+                        .flat_map(|(_id, verts)| verts.into_iter())
+                        .collect();
+                    self.text_vertices = vertices;
+                }
+                Err(BrushError::TextureTooSmall { suggested }) => {
+                    self.text_vertices = Vec::new();
+                    println!("brusherror. Suggest {:?}", suggested);
+                }
+                _ => {}
+            }
+        }
+
+        let mut image_cache = Write::<'_, ImageCache>::fetch(world);
+        for img in &layer.images {
+            match img {
+                iced_graphics::layer::Image::Raster { handle, bounds } => {
+                    let handle = image_cache.get::<B>(handle, &world).unwrap();
+                    let info = self.image_pipeline.textures.insert(
+                        factory,
+                        world,
+                        &handle,
+                        hal::image::Layout::ShaderReadOnlyOptimal,
+                    );
+                    if let Some((id, _changed)) = info {
+                        let verts = vec![
+                            ImageVertex {
+                                position: [bounds.x, bounds.y].into(),
+                                uv: [0., 0.].into(),
+                            },
+                            ImageVertex {
+                                position: [bounds.x + bounds.width, bounds.y].into(),
+                                uv: [1., 0.].into(),
+                            },
+                            ImageVertex {
+                                position: [bounds.x + bounds.width, bounds.y + bounds.height]
+                                    .into(),
+                                uv: [1., 1.].into(),
+                            },
+                            ImageVertex {
+                                position: [bounds.x, bounds.y].into(),
+                                uv: [0., 0.].into(),
+                            },
+                            ImageVertex {
+                                position: [bounds.x, bounds.y + bounds.height].into(),
+                                uv: [0., 1.].into(),
+                            },
+                            ImageVertex {
+                                position: [bounds.x + bounds.width, bounds.y + bounds.height]
+                                    .into(),
+                                uv: [1., 1.].into(),
+                            },
+                        ];
+                        self.image_pipeline.batches.insert(id, verts);
+                    }
+                }
+                _ => { /*not supported*/ }
+            }
         }
 
         layerinfo.bounds = Rect {
@@ -208,104 +371,10 @@ impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
         _subpass: hal::pass::Subpass<'_, B>,
         world: &World,
     ) -> PrepareResult {
-
         let iced_primitives = Write::<'_, Primitive>::fetch(world);
 
-        let action = {
-            let mut glyph_brush = WriteExpect::<'_, IcedGlyphBrush>::fetch(world);
-            let asset_textures = Write::<'_, AssetStorage<Texture>>::fetch(world);
-                let glyph_atlas = Write::<'_, GlyphAtlas>::fetch(world);
-            let glyph_tex = asset_textures
-                .get(&glyph_atlas.0.as_ref().unwrap())
-                .and_then(B::unwrap_texture)
-                .unwrap();
-            glyph_brush.process_queued(
-                |rect, data| unsafe {
-                    factory
-                        .upload_image(
-                            glyph_tex.image().clone(),
-                            rect.width(),
-                            rect.height(),
-                            hal::image::SubresourceLayers {
-                                aspects: hal::format::Aspects::COLOR,
-                                level: 0,
-                                layers: 0..1,
-                            },
-                            hal::image::Offset {
-                                x: rect.min.x as _,
-                                y: rect.min.y as _,
-                                z: 0,
-                            },
-                            hal::image::Extent {
-                                width: rect.width(),
-                                height: rect.height(),
-                                depth: 1,
-                            },
-                            data,
-                            ImageState {
-                                queue,
-                                stage: hal::pso::PipelineStage::FRAGMENT_SHADER,
-                                access: hal::image::Access::SHADER_READ,
-                                layout: hal::image::Layout::General,
-                            },
-                            ImageState {
-                                queue,
-                                stage: hal::pso::PipelineStage::FRAGMENT_SHADER,
-                                access: hal::image::Access::SHADER_READ,
-                                layout: hal::image::Layout::General,
-                            },
-                        )
-                        .unwrap();
-                },
-                |glyph| {
-                    // TODO: dont display glyph if out of screen bounds
-
-                    let uvs = glyph.tex_coords;
-                    //let pos = glyph.pixel_coords;
-                    let pos = glyph.pixel_coords;
-                    let color: [f32; 4] = glyph.color;
-
-                    (
-                        glyph.z.to_bits(),
-                        vec![
-                            TextVertex {
-                                position: [pos.min.x as f32, pos.min.y as f32].into(),
-                                uv: [uvs.min.x, uvs.min.y].into(),
-                                color: color.into(),
-                            },
-                            TextVertex {
-                                position: [pos.max.x as f32, pos.min.y as f32].into(),
-                                uv: [uvs.max.x, uvs.min.y].into(),
-                                color: color.into(),
-                            },
-                            TextVertex {
-                                position: [pos.max.x as f32, pos.max.y as f32].into(),
-                                uv: [uvs.max.x, uvs.max.y].into(),
-                                color: color.into(),
-                            },
-                            TextVertex {
-                                position: [pos.min.x as f32, pos.min.y as f32].into(),
-                                uv: [uvs.min.x, uvs.min.y].into(),
-                                color: color.into(),
-                            },
-                            TextVertex {
-                                position: [pos.min.x as f32, pos.max.y as f32].into(),
-                                uv: [uvs.min.x, uvs.max.y].into(),
-                                color: color.into(),
-                            },
-                            TextVertex {
-                                position: [pos.max.x as f32, pos.max.y as f32].into(),
-                                uv: [uvs.max.x, uvs.max.y].into(),
-                                color: color.into(),
-                            },
-                        ],
-                    )
-                },
-            )
-        };
-
-
         self.image_pipeline.reset(factory, index);
+        self.text_pipeline.reset(factory, index, world);
 
         self.triangle_pipeline.vertices = vec![];
         self.triangle_pipeline.uniforms.write(
@@ -325,7 +394,7 @@ impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
             let layers = Layer::generate(iced_primitives, &viewport);
 
             for layer in layers {
-                let info = self.compute_renderdata(layer, &world);
+                let info = self.compute_renderdata(layer, &world, &factory, queue);
                 self.layer_infos.push(info);
             }
         }
@@ -349,28 +418,12 @@ impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
             Some(self.image_pipeline.batches.data()),
         );
 
-        self.text_pipeline.reset(factory, index, world);
-        match action {
-            Ok(BrushAction::Draw(vertices)) => {
-                let vertices : Vec<TextVertex> = vertices
-                .into_iter()
-                .flat_map(|(_id, verts)| verts.into_iter())
-                .collect();
-                self.text_vertices = vertices;
-            }
-            Err(BrushError::TextureTooSmall { suggested }) => {
-                self.text_vertices = Vec::new();
-                println!("brusherror. Suggest {:?}", suggested);
-            }
-            _ => {}
-        }
         self.text_pipeline.vertex.write(
             factory,
             index,
             self.text_vertices.len() as u64,
             Some(&self.text_vertices),
         );
-
 
         self.text_pipeline.textures.maintain(factory, world);
         self.image_pipeline.textures.maintain(factory, world);
@@ -400,11 +453,12 @@ impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
                 layerinfo.bounds,
             );
         }
+
         self.text_pipeline.draw(
             &mut encoder,
             index,
             aux,
-            0, //TODO start
+            0,                               //TODO start
             self.text_vertices.len() as u32, //TODO count
         );
 

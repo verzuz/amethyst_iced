@@ -1,6 +1,5 @@
 mod backend;
 mod bundle;
-mod custom_widget;
 mod pass;
 mod pipelines;
 mod plugin;
@@ -14,7 +13,6 @@ mod vertex;
 pub mod widget;
 
 pub use bundle::IcedBundle;
-pub use custom_widget::*;
 pub use plugin::IcedUI;
 pub use sandbox::{Element, Sandbox, SandboxContainer};
 
